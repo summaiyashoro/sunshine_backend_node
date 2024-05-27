@@ -31,6 +31,9 @@ app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser. text({type: '/'}));
+app.use(express.urlencoded({ extended: true }));
+
+app.use('uploads',express.static('./uploads'))
 
 //compression middleware - for reducing size of response
 app.use(compression());

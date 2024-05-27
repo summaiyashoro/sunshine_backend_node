@@ -76,7 +76,6 @@ export class RentalIncomeClass {
     static async addRentalIncome(body, files) {
         try {
           let response = [];
-          console.log("body",files);
     
           response = await this.table.create({
             yourProperty: body?.yourProperty,

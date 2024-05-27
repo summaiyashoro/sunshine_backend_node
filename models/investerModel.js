@@ -43,10 +43,6 @@ const attributes = {
     allowNull: false,
   },
   purchaseAgreementPDF: {
-    type: DataTypes.BLOB,
-    allowNull: true,
-  },
-  purchaseAgreementPDF_Filename: {
     type: DataTypes.STRING,
     allowNull: true,
   },
@@ -66,12 +62,8 @@ const attributes = {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-  unitHolderPurchaseAgreementPDF_Filename: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
   unitHolderPurchaseAgreementPDF: {
-    type: DataTypes.BLOB,
+    type: DataTypes.STRING,
     allowNull: true,
   },
   dateOfPurchase: {
@@ -136,11 +128,9 @@ export class InvesterClass {
           'phoneNumber',
           'email',
           'purchaseAgreementPDF',
-          'purchaseAgreementPDF_Filename',
           'unitHolderInvestedAmount',
           'unitHolderInvestedUnits',
           'sharesAllocated',
-          'unitHolderPurchaseAgreementPDF_Filename',
           'unitHolderPurchaseAgreementPDF',
           'dateOfPurchase',
           'sharesallocateddate'
@@ -148,25 +138,50 @@ export class InvesterClass {
         where: {createdBy : body?.userId},
         raw: true
     })
+      
       return response;
     } catch (error) {
       throw new Error(error?.message);
     }
   }
 
+  static async getSingleInvester(body) {
+    try {
+      let response = [];
+
+      response = await this.table.findAll({
+        attributes:[
+          'Id',
+          'shareHolder',
+          'unitHolder',
+          'firstName',
+          'lastName',
+          'address',
+          'phoneNumber',
+          'email',
+          'purchaseAgreementPDF',
+          'unitHolderInvestedAmount',
+          'unitHolderInvestedUnits',
+          'sharesAllocated',
+          'unitHolderPurchaseAgreementPDF',
+          'dateOfPurchase',
+          'sharesallocateddate'
+        ],
+        where: {createdBy : body?.userId, Id : body.investerID},
+        raw: true
+    })
+    // response.purchaseAgreementPDF = 
+      return response;
+    } catch (error) {
+      throw new Error(error?.message);
+    }
+  }
+
+
   static async addInvester(body, files) {
     try {
       let response = [];
-      const purchaseAgreementPDF = files["purchaseAgreementPDF"];
-      const unitHolderPurchaseAgreementPDF =
-        files["unitHolderPurchaseAgreementPDF"];
-
-      const purchaseAgreementPDFBuffer = purchaseAgreementPDF ? purchaseAgreementPDF[0]?.buffer : null;
-      const unitHolderPurchaseAgreementPDFBuffer = unitHolderPurchaseAgreementPDF ? unitHolderPurchaseAgreementPDF[0]?.buffer : null;
-
-      console.log("purchaseAgreementPDFBuffer",purchaseAgreementPDFBuffer);
-      console.log("unitHolderPurchaseAgreementPDFBuffer",unitHolderPurchaseAgreementPDFBuffer);
-
+      console.log("body",body);
       const email = body.email;
       const userExists = await this.table.findOne({
         where: { email:email },
@@ -187,18 +202,11 @@ export class InvesterClass {
         address: body?.address,
         phoneNumber: body?.phoneNumber,
         email: body.email,
-        purchaseAgreementPDF: purchaseAgreementPDFBuffer?.toString('binary'),
-        purchaseAgreementPDF_Filename: purchaseAgreementPDF
-          ? purchaseAgreementPDF[0]?.fieldname
-          : null,
+        purchaseAgreementPDF: body?.purchaseAgreementPDF,
         password: hashedPassword,
         unitHolderInvestedAmount: body?.unitHolderInvestedAmount,
         unitHolderInvestedUnits: body?.unitHolderInvestedUnits,
-        unitHolderPurchaseAgreementPDF_Filename:
-          unitHolderPurchaseAgreementPDF
-            ? unitHolderPurchaseAgreementPDF[0]?.fieldname
-            : null,
-        unitHolderPurchaseAgreementPDF: unitHolderPurchaseAgreementPDFBuffer?.toString('binary'),
+        unitHolderPurchaseAgreementPDF: body?.unitHolderPurchaseAgreementPDF,
         sharesAllocated: body?.sharesAllocated,
         sharesallocateddate: body?.sharesallocateddate,
         dateOfPurchase: body?.dateOfPurchase,
@@ -207,7 +215,6 @@ export class InvesterClass {
 
       return response;
     } catch (error) {
-      console.log("error", error);
       throw new Error(error?.message);
     }
   }
@@ -218,18 +225,6 @@ export class InvesterClass {
       const rowID = body?.id;
       delete body.userID
       const fieldsToUpdate = {};
-
-      if(Object.keys(files)?.length >0){
-        const purchaseAgreementPDF = files["purchaseAgreementPDF"];
-        const unitHolderPurchaseAgreementPDF = files["unitHolderPurchaseAgreementPDF"];
-        const purchaseAgreementPDFBuffer = purchaseAgreementPDF ? purchaseAgreementPDF[0]?.buffer : null;
-        const unitHolderPurchaseAgreementPDFBuffer = unitHolderPurchaseAgreementPDF ? unitHolderPurchaseAgreementPDF[0]?.buffer : null;
-
-
-        fieldsToUpdate['purchaseAgreementPDF'] = purchaseAgreementPDFBuffer?.toString('binary');
-        fieldsToUpdate['unitHolderPurchaseAgreementPDF'] = unitHolderPurchaseAgreementPDFBuffer?.toString('binary');
-      }
-
 
       body &&  Object.keys(body).forEach((key)=>{
         fieldsToUpdate[key] = body[key];

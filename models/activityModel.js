@@ -45,10 +45,7 @@ export class activityClass {
 
     static async getAllActivities(body) {
         try {
-          let response = [];
-
-          console.log("body",body);
-    
+          let response = [];    
           response = await this.table.findAll({
             where: {createdBy : body?.userId},
             raw: true
