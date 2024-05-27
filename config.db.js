@@ -8,7 +8,8 @@ const sequelize = new Sequelize('sunshine', 'sa', '123', {
         options: {
             encrypt: false,
         }
-    }
+    },
+    logging: false
 });
 
 const db = {};

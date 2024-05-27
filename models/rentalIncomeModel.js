@@ -1,5 +1,6 @@
 import { DataTypes, Op, Sequelize, col, fn, literal } from "sequelize";
 import db from '../config.db.js';
+import moment from "moment";
 
 const attributes = {
     Id: {
@@ -8,8 +9,34 @@ const attributes = {
       autoIncrement: true,
       primaryKey: true,
     },
-    Name: { type: DataTypes.STRING(30), allowNull: false },
-    Email: { type: DataTypes.STRING(30), allowNull: false },
+    yourProperty: { type: DataTypes.STRING, allowNull: false },
+    tenantFirstName: { type: DataTypes.STRING, allowNull: true },
+    tenantLastName: { type: DataTypes.STRING, allowNull: true },
+    tenantPhone: { type: DataTypes.STRING, allowNull: true },
+    tenantEmail: { type: DataTypes.STRING, allowNull: true },
+    rentAmount: { type: DataTypes.INTEGER, allowNull: true },
+    selectedDate: { type: DataTypes.INTEGER, allowNull: true },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
+    },
+    createdBy: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
+    },
+    updatedBy: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    //object left 
+    //   "files": {},
+
   };
 
 export class RentalIncomeClass {
@@ -33,67 +60,70 @@ export class RentalIncomeClass {
         }
     }
 
-    // public constructor(body: any) {
-    //     if (
-    //         body.orgRole === 'RM' ||
-    //         body.orgRole === 'Islamic_RM' ||
-    //         body.orgRole === 'EPM'
-    //     ) {
-    //         RentalIncomeClass.where = {};
-    //     } else if (body.orgRole === 'BM' || body.orgRole === 'Islamic_BM') {
-    //         RentalIncomeClass.where = { branchcode: body.respCode };
-    //     } else {
-    //         RentalIncomeClass.where = {};
-    //     }
-    // }
-
-    static async addRentalIncome(body) {
+    static async getAllRentalIncome(body) {
         try {
-            let response = [];
-            // let converted_date = new Date(new Date(body.selectedDate).toISOString().split('T')[0]);
-
-            //CASATD Split Fetching Data From Database 
-            response = await this.table.create({
-                // attributes: [
-                //     'CASATD',
-                //     [fn('sum', col('BaseBalance')), 'base'],
-                //     [fn('sum', col('PEPKRBalance')), 'actual']
-                // ],
-                // where: this.where,
-                // group: ['CASATD'],
-                // order: ['CASATD'],
-                // raw: true
-            })
-        
-            return response;
-
-        } catch (error) {
-            throw new Error("Error in getDashboardPEBalanceGraphAndSplits");
-        }
-    }
+          let response = [];
     
-    static async editRentalIncome(body) {
-        try {
-            let response = [];
-            // let converted_date = new Date(new Date(body.selectedDate).toISOString().split('T')[0]);
-
-            //CASATD Split Fetching Data From Database 
-            response = await this.table.update({
-                // attributes: [
-                //     'CASATD',
-                //     [fn('sum', col('BaseBalance')), 'base'],
-                //     [fn('sum', col('PEPKRBalance')), 'actual']
-                // ],
-                // where: this.where,
-                // group: ['CASATD'],
-                // order: ['CASATD'],
-                // raw: true
-            })
-        
-            return response;
-
+          response = await this.table.findAll({
+            where: {createdBy : body?.userId},
+            raw: true
+        })
+          return response;
         } catch (error) {
-            throw new Error("Error in getDashboardPEBalanceGraphAndSplits");
+          throw new Error(error?.message);
         }
     }
+    static async addRentalIncome(body, files) {
+        try {
+          let response = [];
+          console.log("body",files);
+    
+          response = await this.table.create({
+            yourProperty: body?.yourProperty,
+            tenantFirstName: body?.tenantFirstName ,
+            tenantLastName: body?.tenantLastName ,
+            tenantPhone: body?.tenantPhone,
+            tenantEmail: body?.tenantEmail ,
+            rentAmount: body?.rentAmount,
+            selectedDate: body?.selectedDate,
+            createdBy: body?.userID,
+          });
+    
+          return response;
+        } catch (error) {
+          console.log("error", error);
+          throw new Error(error?.message);
+        }
+    }
+
+    static async editRentalIncome(body,files) {
+    try {
+        let response = [];
+        const fieldsToUpdate = {};
+        body = body?.fieldsToUpdate;
+        investerId = body?.Id
+
+        files ? fieldsToUpdate['purchaseAgreementPDF'] = files["purchaseAgreementPDF"] : null
+        files ? fieldsToUpdate['unitHolderPurchaseAgreementPDF'] = files["unitHolderPurchaseAgreementPDF"] : null
+
+        body ??  Object.keys(body).forEach((key)=>{
+        fieldsToUpdate[key] = body[key];
+        })
+
+        console.log("fieldsToUpdate",fieldsToUpdate);
+        console.log("investerId",investerId);
+
+        //CASATD Split Fetching Data From Database
+        // response = await this.table.update({
+        //   ...fieldsToUpdate,
+        //   where:{Id : investerId}
+        //   // where: this.where,
+        // });
+
+        return response;
+    } catch (error) {
+        throw new Error("Error in getDashboardPEBalanceGraphAndSplits");
+    }
+    }
+
 }

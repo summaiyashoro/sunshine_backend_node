@@ -1,16 +1,15 @@
 import express from 'express';
+import { InvesterClass } from '../models/investerModel.js';
 const router = express.Router();
 
-import {UserClass} from '../models/userModel.js'; 
 
-router.post('/create_user',(req, res)=>{
-    const data = UserClass.createUser(req.body);
-    res.send({success:true , data});
-})
-
-router.post('/login_user',(req, res)=>{
-    const data = UserClass.loginUser(req.body);
-    res.send({success:true , data});
+router.post('/login_investor',async(req, res)=>{
+    try{
+     const data = await InvesterClass.loginInvester(req.body);
+     res.json({success:true , data:data});
+    }catch(err){
+     res.json({success:false , data: [], error:err?.message});
+    }
 })
 
 export default router;

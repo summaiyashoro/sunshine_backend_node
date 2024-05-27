@@ -5,17 +5,17 @@ import investerController from '../controllers/investerController.js';
 import propertyController from '../controllers/propertyController.js';
 import rentalIncomeController from '../controllers/rentalIncomeController.js';
 import maintainanceController from '../controllers/maintainanceController.js';
+import activityController from '../controllers/activityController.js';
 
-router.post('/',(req, res)=>{
-    res.send("Hello World");
-})
+router.use('/investor',investerController)
 
-router.post('/investor',investerController)
+router.use('/property',propertyController)
 
-router.post('/property',propertyController)
+router.use('/rental_income',rentalIncomeController)
 
-router.post('/rental_income',rentalIncomeController)
+router.use('/maintenance',maintainanceController)
 
-router.post('/maintenance',maintainanceController)
+router.use('/activity', activityController)
+
 
 export default router;

@@ -1,99 +1,283 @@
 import { DataTypes, Op, Sequelize, col, fn, literal } from "sequelize";
-import db from '../config.db.js';
+import db from "../config.db.js";
+import moment from "moment";
+import bcrypt from "bcrypt";
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const attributes = {
-    Id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    Name: { type: DataTypes.STRING(30), allowNull: false },
-    Email: { type: DataTypes.STRING(30), allowNull: false },
-  };
+  Id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  shareHolder: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+  },
+  unitHolder: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+  },
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  phoneNumber: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  purchaseAgreementPDF: {
+    type: DataTypes.BLOB,
+    allowNull: true,
+  },
+  purchaseAgreementPDF_Filename: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  unitHolderInvestedAmount: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  unitHolderInvestedUnits: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  sharesAllocated: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  unitHolderPurchaseAgreementPDF_Filename: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  unitHolderPurchaseAgreementPDF: {
+    type: DataTypes.BLOB,
+    allowNull: true,
+  },
+  dateOfPurchase: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  sharesallocateddate: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
+  },
+  createdBy: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
+  },
+  updatedBy: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+};
 
 export class InvesterClass {
-    static table;
-    static initialize = false;
-    static where={};
+  static table;
+  static initialize = false;
+  static where = {};
 
-    static async Initialize(database) {
-        try {
-            this.table = db.sequelize.define("Invester", attributes, {
-                freezeTableName: true,
-                // don't add the timestamp attributes (updatedAt, createdAt)
-                timestamps: false,
-            });
-            await db.sequelize.sync();
-            InvesterClass.initialize = true;
-            return InvesterClass.initialize;
-        }
-        catch (error) {
-            throw new Error(`Error in initializing InvesterClass ${error}`);
-        }
+  static async Initialize(database) {
+    try {
+      this.table = db.sequelize.define("Invester", attributes, {
+        freezeTableName: true,
+        timestamps: true,
+      });
+      await db.sequelize.sync();
+      InvesterClass.initialize = true;
+      return InvesterClass.initialize;
+    } catch (error) {
+      throw new Error(`Error in initializing InvesterClass ${error}`);
     }
+  }
 
-    // public constructor(body: any) {
-    //     if (
-    //         body.orgRole === 'RM' ||
-    //         body.orgRole === 'Islamic_RM' ||
-    //         body.orgRole === 'EPM'
-    //     ) {
-    //         InvesterClass.where = {};
-    //     } else if (body.orgRole === 'BM' || body.orgRole === 'Islamic_BM') {
-    //         InvesterClass.where = { branchcode: body.respCode };
-    //     } else {
-    //         InvesterClass.where = {};
-    //     }
-    // }
+  static async getAllInvesters(body) {
+    try {
+      let response = [];
 
-    static async addInvester(body) {
-        try {
-            let response = [];
-            // let converted_date = new Date(new Date(body.selectedDate).toISOString().split('T')[0]);
-
-            //CASATD Split Fetching Data From Database 
-            response = await this.table.create({
-                // attributes: [
-                //     'CASATD',
-                //     [fn('sum', col('BaseBalance')), 'base'],
-                //     [fn('sum', col('PEPKRBalance')), 'actual']
-                // ],
-                // where: this.where,
-                // group: ['CASATD'],
-                // order: ['CASATD'],
-                // raw: true
-            })
-        
-            return response;
-
-        } catch (error) {
-            throw new Error("Error in getDashboardPEBalanceGraphAndSplits");
-        }
+      response = await this.table.findAll({
+        attributes:[
+          'Id',
+          'shareHolder',
+          'unitHolder',
+          'firstName',
+          'lastName',
+          'address',
+          'phoneNumber',
+          'email',
+          'purchaseAgreementPDF',
+          'purchaseAgreementPDF_Filename',
+          'unitHolderInvestedAmount',
+          'unitHolderInvestedUnits',
+          'sharesAllocated',
+          'unitHolderPurchaseAgreementPDF_Filename',
+          'unitHolderPurchaseAgreementPDF',
+          'dateOfPurchase',
+          'sharesallocateddate'
+        ],
+        where: {createdBy : body?.userId},
+        raw: true
+    })
+      return response;
+    } catch (error) {
+      throw new Error(error?.message);
     }
+  }
 
-    static async editInvester(body) {
-        try {
-            let response = [];
-            // let converted_date = new Date(new Date(body.selectedDate).toISOString().split('T')[0]);
+  static async addInvester(body, files) {
+    try {
+      let response = [];
+      const purchaseAgreementPDF = files["purchaseAgreementPDF"];
+      const unitHolderPurchaseAgreementPDF =
+        files["unitHolderPurchaseAgreementPDF"];
 
-            //CASATD Split Fetching Data From Database 
-            response = await this.table.update({
-                // attributes: [
-                //     'CASATD',
-                //     [fn('sum', col('BaseBalance')), 'base'],
-                //     [fn('sum', col('PEPKRBalance')), 'actual']
-                // ],
-                // where: this.where,
-                // group: ['CASATD'],
-                // order: ['CASATD'],
-                // raw: true
-            })
-        
-            return response;
+      const purchaseAgreementPDFBuffer = purchaseAgreementPDF ? purchaseAgreementPDF[0]?.buffer : null;
+      const unitHolderPurchaseAgreementPDFBuffer = unitHolderPurchaseAgreementPDF ? unitHolderPurchaseAgreementPDF[0]?.buffer : null;
 
-        } catch (error) {
-            throw new Error("Error in getDashboardPEBalanceGraphAndSplits");
-        }
+      console.log("purchaseAgreementPDFBuffer",purchaseAgreementPDFBuffer);
+      console.log("unitHolderPurchaseAgreementPDFBuffer",unitHolderPurchaseAgreementPDFBuffer);
+
+      const email = body.email;
+      const userExists = await this.table.findOne({
+        where: { email:email },
+      });
+      if (userExists) {
+        throw new Error("Email is already associated with an account");
+      }
+
+      const saltRounds= parseInt(process.env.saltRounds);
+      const salt = bcrypt.genSaltSync(saltRounds);
+      const hashedPassword = bcrypt.hashSync(body?.password, salt);
+
+      response = await this.table.create({
+        shareHolder: body?.shareHolder,
+        unitHolder: body?.unitHolder,
+        firstName: body?.firstName,
+        lastName: body?.lastName,
+        address: body?.address,
+        phoneNumber: body?.phoneNumber,
+        email: body.email,
+        purchaseAgreementPDF: purchaseAgreementPDFBuffer?.toString('binary'),
+        purchaseAgreementPDF_Filename: purchaseAgreementPDF
+          ? purchaseAgreementPDF[0]?.fieldname
+          : null,
+        password: hashedPassword,
+        unitHolderInvestedAmount: body?.unitHolderInvestedAmount,
+        unitHolderInvestedUnits: body?.unitHolderInvestedUnits,
+        unitHolderPurchaseAgreementPDF_Filename:
+          unitHolderPurchaseAgreementPDF
+            ? unitHolderPurchaseAgreementPDF[0]?.fieldname
+            : null,
+        unitHolderPurchaseAgreementPDF: unitHolderPurchaseAgreementPDFBuffer?.toString('binary'),
+        sharesAllocated: body?.sharesAllocated,
+        sharesallocateddate: body?.sharesallocateddate,
+        dateOfPurchase: body?.dateOfPurchase,
+        createdBy: body?.userID,
+      });
+
+      return response;
+    } catch (error) {
+      console.log("error", error);
+      throw new Error(error?.message);
     }
+  }
+
+  static async editInvester(body,files) {
+    try {
+      let response = [];
+      const rowID = body?.id;
+      delete body.userID
+      const fieldsToUpdate = {};
+
+      if(Object.keys(files)?.length >0){
+        const purchaseAgreementPDF = files["purchaseAgreementPDF"];
+        const unitHolderPurchaseAgreementPDF = files["unitHolderPurchaseAgreementPDF"];
+        const purchaseAgreementPDFBuffer = purchaseAgreementPDF ? purchaseAgreementPDF[0]?.buffer : null;
+        const unitHolderPurchaseAgreementPDFBuffer = unitHolderPurchaseAgreementPDF ? unitHolderPurchaseAgreementPDF[0]?.buffer : null;
+
+
+        fieldsToUpdate['purchaseAgreementPDF'] = purchaseAgreementPDFBuffer?.toString('binary');
+        fieldsToUpdate['unitHolderPurchaseAgreementPDF'] = unitHolderPurchaseAgreementPDFBuffer?.toString('binary');
+      }
+
+
+      body &&  Object.keys(body).forEach((key)=>{
+        fieldsToUpdate[key] = body[key];
+      })
+
+      response = await this.table.update({
+        ...fieldsToUpdate},{
+          where:{Id : rowID}
+        });
+
+      return response;
+    } catch (error) {
+      throw new Error(error?.message);
+    }
+  }
+
+  static async loginInvester(body) {
+    try {
+      const { email, password } = body;
+      const user = await this.table.findOne({
+        where: { email },
+      });
+
+      if (!user) {
+        throw new Error('Email not found');
+      }
+
+      // Verify password
+      const passwordValid = await bcrypt.compare(password, user.password);
+      if (!passwordValid) {
+        throw new Error('Incorrect email or password');
+      }
+
+      // Authenticate user with jwt
+      const token = jwt.sign({ id: user.Id }, process.env.JWT_SECRET, {
+        expiresIn:'1d',
+      });
+
+      return {
+        investerID: user.Id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        accessToken: token,
+      }
+    } catch (error) {
+      console.log("error",error);
+      throw new Error(error?.message);
+    }
+  }
 }

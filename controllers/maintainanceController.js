@@ -3,13 +3,13 @@ const router = express.Router();
 
 import {MaintainanceClass} from '../models/maintainanceModel.js';
 
-router.post('/add-maintenance',(req, res)=>{
-    const data = MaintainanceClass.addMaintainance(req.body);
+router.post('/add-maintenance',async(req, res)=>{
+    const data =await MaintainanceClass.addMaintainance(req.body);
     res.send({success:true , data});
 })
 
-router.post('/edit-single-maintenance',(req, res)=>{
-    const data = MaintainanceClass.editMaintainance(req.body);
+router.post('/edit-single-maintenance',async(req, res)=>{
+    const data = await MaintainanceClass.editMaintainance(req.body);
     res.send({success:true , data});
 })
 
