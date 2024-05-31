@@ -21,8 +21,7 @@ export class MaintainanceClass {
         try {
             this.table = db.sequelize.define("Maintainance", attributes, {
                 freezeTableName: true,
-                // don't add the timestamp attributes (updatedAt, createdAt)
-                timestamps: false,
+                timestamps: true,
             });
             await db.sequelize.sync();
             MaintainanceClass.initialize = true;
@@ -32,20 +31,6 @@ export class MaintainanceClass {
             throw new Error(`Error in initializing MaintainanceClass ${error}`);
         }
     }
-
-    // public constructor(body: any) {
-    //     if (
-    //         body.orgRole === 'RM' ||
-    //         body.orgRole === 'Islamic_RM' ||
-    //         body.orgRole === 'EPM'
-    //     ) {
-    //         MaintainanceClass.where = {};
-    //     } else if (body.orgRole === 'BM' || body.orgRole === 'Islamic_BM') {
-    //         MaintainanceClass.where = { branchcode: body.respCode };
-    //     } else {
-    //         MaintainanceClass.where = {};
-    //     }
-    // }
 
     static async addMaintainance(body) {
         try {

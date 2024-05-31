@@ -1,25 +1,20 @@
-import { DataTypes, Op, Sequelize, col, fn, literal } from "sequelize";
+import { DataTypes, Sequelize } from "sequelize";
 import db from '../config.db.js';
-import moment from "moment";
 
 const attributes = {
-    Id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      autoIncrement: true,
+    activityID: {
+      type: DataTypes.UUID,
       primaryKey: true,
+      defaultValue: Sequelize.UUIDV4,
     },
-    activity_message: { type: DataTypes.STRING, allowNull: false },
-    createdAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
+    activity_message: { 
+      type: DataTypes.STRING, 
+      allowNull: false 
     },
     createdBy: {
         type: DataTypes.STRING,
         allowNull: true,
     }
-
   };
 
 export class activityClass {
@@ -27,12 +22,11 @@ export class activityClass {
     static initialize = false;
     static where={};
 
-    static async Initialize(database) {
+    static async Initialize() {
         try {
             this.table = db.sequelize.define("activity_trail", attributes, {
                 freezeTableName: true,
-                // don't add the timestamp attributes (updatedAt, createdAt)
-                timestamps: false,
+                timestamps: true,
             });
             await db.sequelize.sync();
             activityClass.initialize = true;
@@ -47,6 +41,10 @@ export class activityClass {
         try {
           let response = [];    
           response = await this.table.findAll({
+            attributes:[
+              'activityID',
+              'activity_message'
+            ],
             where: {createdBy : body?.userId},
             raw: true
         })
@@ -62,7 +60,7 @@ export class activityClass {
     
           response = await this.table.create({
             activity_message: body?.activity_message,
-            createdBy: body?.userId,
+            createdBy: body?.userId
           });
     
           return response;

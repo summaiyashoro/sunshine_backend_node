@@ -16,18 +16,17 @@ router.post('/get_propperties',async(req, res)=>{
 
 router.post('/add_property',upload.fields([{ name: 'purchaseAgreementPDF' }, { name: 'unitHolderPurchaseAgreementPDF' }]),async(req, res)=>{
     try{    
-        const data = await PropertyClass.addProperty(req.body, req.files);
+        await PropertyClass.addProperty(req.body, req.files);
         res.send({success:true});
     }catch(err){
-        console.log("err",err.message);
         res.status(500).send({success:false , data: [], error:err?.message});
     }
 
 })
 
 router.post('/edit_property',async(req, res)=>{
-    const data = await PropertyClass.editProperty(req.body);
-    res.send({success:true , data});
+    await PropertyClass.editProperty(req.body);
+    res.send({success:true});
 })
 
 export default router;

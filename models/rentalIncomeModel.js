@@ -9,26 +9,37 @@ const attributes = {
       autoIncrement: true,
       primaryKey: true,
     },
-    yourProperty: { type: DataTypes.STRING, allowNull: false },
-    tenantFirstName: { type: DataTypes.STRING, allowNull: true },
-    tenantLastName: { type: DataTypes.STRING, allowNull: true },
-    tenantPhone: { type: DataTypes.STRING, allowNull: true },
-    tenantEmail: { type: DataTypes.STRING, allowNull: true },
-    rentAmount: { type: DataTypes.INTEGER, allowNull: true },
-    selectedDate: { type: DataTypes.INTEGER, allowNull: true },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
+    yourProperty: { 
+      type: DataTypes.STRING, 
+      allowNull: false 
+    },
+    tenantFirstName: { 
+      type: DataTypes.STRING, 
+      allowNull: true 
+    },
+    tenantLastName: { 
+      type: DataTypes.STRING, 
+      allowNull: true 
+    },
+    tenantPhone: {
+      type: DataTypes.STRING, 
+      allowNull: true 
+    },
+    tenantEmail: { 
+      type: DataTypes.STRING, 
+      allowNull: true 
+    },
+    rentAmount: { 
+      type: DataTypes.INTEGER, 
+      allowNull: true 
+    },
+    selectedDate: { 
+      type: DataTypes.INTEGER, 
+      allowNull: true 
     },
     createdBy: {
         type: DataTypes.STRING,
         allowNull: true,
-    },
-    updatedAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
     },
     updatedBy: {
         type: DataTypes.STRING,
@@ -44,12 +55,11 @@ export class RentalIncomeClass {
     static initialize = false;
     static where={};
 
-    static async Initialize(database) {
+    static async Initialize() {
         try {
             this.table = db.sequelize.define("RetailIncome", attributes, {
                 freezeTableName: true,
-                // don't add the timestamp attributes (updatedAt, createdAt)
-                timestamps: false,
+                timestamps: true,
             });
             await db.sequelize.sync();
             RentalIncomeClass.initialize = true;

@@ -5,8 +5,8 @@ import { activityClass } from '../models/activityModel.js';
 
 router.post('/add_trail',async(req, res)=>{
     try{
-        const data = await activityClass.addActivity(req.body);
-        res.send({success:true , data});
+        await activityClass.addActivity(req.body);
+        res.send({success:true});
     }catch(err){
         res.status(500).send({success:false , data: [], error:err?.message});
     }

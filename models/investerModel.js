@@ -1,6 +1,5 @@
-import { DataTypes, Op, Sequelize, col, fn, literal } from "sequelize";
+import { DataTypes, Sequelize } from "sequelize";
 import db from "../config.db.js";
-import moment from "moment";
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -8,11 +7,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const attributes = {
-  Id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    autoIncrement: true,
+  investerID: {
+    type: DataTypes.UUID,
     primaryKey: true,
+    defaultValue: Sequelize.UUIDV4,
   },
   shareHolder: {
     type: DataTypes.BOOLEAN,
@@ -74,24 +72,14 @@ const attributes = {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    allowNull: true,
-    defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
-  },
   createdBy: {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  updatedAt: {
-    type: DataTypes.DATE,
-    allowNull: true,
-    defaultValue: moment.utc().format("YYYY-MM-DD HH:mm:ss"),
-  },
   updatedBy: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
+  }
 };
 
 export class InvesterClass {
@@ -99,7 +87,7 @@ export class InvesterClass {
   static initialize = false;
   static where = {};
 
-  static async Initialize(database) {
+  static async Initialize() {
     try {
       this.table = db.sequelize.define("Invester", attributes, {
         freezeTableName: true,
@@ -119,19 +107,13 @@ export class InvesterClass {
 
       response = await this.table.findAll({
         attributes:[
-          'Id',
-          'shareHolder',
-          'unitHolder',
+          'investerID',
           'firstName',
           'lastName',
-          'address',
-          'phoneNumber',
           'email',
-          'purchaseAgreementPDF',
           'unitHolderInvestedAmount',
           'unitHolderInvestedUnits',
           'sharesAllocated',
-          'unitHolderPurchaseAgreementPDF',
           'dateOfPurchase',
           'sharesallocateddate'
         ],
@@ -151,7 +133,7 @@ export class InvesterClass {
 
       response = await this.table.findAll({
         attributes:[
-          'Id',
+          'investerID',
           'shareHolder',
           'unitHolder',
           'firstName',
@@ -167,25 +149,23 @@ export class InvesterClass {
           'dateOfPurchase',
           'sharesallocateddate'
         ],
-        where: {createdBy : body?.userId, Id : body.investerID},
+        where: {createdBy : body?.userId, investerID: body.investerID},
         raw: true
     })
-    // response.purchaseAgreementPDF = 
       return response;
     } catch (error) {
       throw new Error(error?.message);
     }
   }
 
-
   static async addInvester(body, files) {
     try {
       let response = [];
-      console.log("body",body);
       const email = body.email;
       const userExists = await this.table.findOne({
         where: { email:email },
       });
+
       if (userExists) {
         throw new Error("Email is already associated with an account");
       }
@@ -210,7 +190,7 @@ export class InvesterClass {
         sharesAllocated: body?.sharesAllocated,
         sharesallocateddate: body?.sharesallocateddate,
         dateOfPurchase: body?.dateOfPurchase,
-        createdBy: body?.userID,
+        createdBy: body?.userId,
       });
 
       return response;
@@ -222,8 +202,12 @@ export class InvesterClass {
   static async editInvester(body,files) {
     try {
       let response = [];
-      const rowID = body?.id;
-      delete body.userID
+      const rowID = body?.investerID;
+      const userId = body?.userId;
+
+      delete body.investerID;
+      delete body.userId;
+
       const fieldsToUpdate = {};
 
       body &&  Object.keys(body).forEach((key)=>{
@@ -232,8 +216,8 @@ export class InvesterClass {
 
       response = await this.table.update({
         ...fieldsToUpdate},{
-          where:{Id : rowID}
-        });
+          where:{investerID : rowID, createdBy:userId}
+      });
 
       return response;
     } catch (error) {
@@ -264,14 +248,13 @@ export class InvesterClass {
       });
 
       return {
-        investerID: user.Id,
+        investerID: user.investerID,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         accessToken: token,
       }
     } catch (error) {
-      console.log("error",error);
       throw new Error(error?.message);
     }
   }

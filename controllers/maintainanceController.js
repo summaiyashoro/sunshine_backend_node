@@ -4,8 +4,8 @@ const router = express.Router();
 import {MaintainanceClass} from '../models/maintainanceModel.js';
 
 router.post('/add-maintenance',async(req, res)=>{
-    const data =await MaintainanceClass.addMaintainance(req.body);
-    res.send({success:true , data});
+    await MaintainanceClass.addMaintainance(req.body);
+    res.send({success:true});
 })
 
 router.post('/edit-single-maintenance',async(req, res)=>{

@@ -10,14 +10,12 @@ export const auth = (req, res, next) =>{
             token = token?.split(" ")[1];
             let user = jwt.verify(token, process.env.JWT_SECRET);
             // req.userId = req.user.id;
-            
+            next();
         }else{
             res.status(401).json({message : 'Unauthorized user'});
         }
 
-        next();
     }catch(err){
-        console.log("error",err);
         res.status(401).json({message : 'Unauthorized user'});
     }
 }
